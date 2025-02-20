@@ -1,0 +1,20 @@
+import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get("code")
+
+  if (code) {
+    const supabase = createRouteHandlerClient({ cookies })
+    await supabase.auth.exchangeCodeForSession(code)
+  }
+
+  // Check if this is a password reset callback
+  const isPasswordReset = requestUrl.searchParams.get("type") === "recovery"
+
+  // URL to redirect to after sign in process completes
+  return NextResponse.redirect(requestUrl.origin + (isPasswordReset ? "/reset-password" : "/dashboard"))
+}
+
